@@ -36,6 +36,7 @@ async function Home({
               <ThreadCard
                 key={post._id}
                 id={post._id}
+                user={userInfo}
                 currentUserId={user.id}
                 parentId={post.parentId}
                 content={post.text}
