@@ -7,6 +7,7 @@ import LikeThread from "../forms/LikeThread";
 
 interface Props {
   id: string;
+  user : any;
   currentUserId: string;
   parentId: string | null;
   content: string;
@@ -31,6 +32,7 @@ interface Props {
 
 function ThreadCard({
   id,
+  user,
   currentUserId,
   parentId,
   content,
@@ -79,7 +81,7 @@ function ThreadCard({
                   height={24}
                   className='cursor-pointer object-contain'
                 /> */}
-                <LikeThread/>
+                <LikeThread threadId={id} user={user}/>
                 <Link href={`/thread/${id}`}>
                   <Image
                     src='/assets/reply.svg'

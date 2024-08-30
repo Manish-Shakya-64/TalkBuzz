@@ -7,6 +7,9 @@ import { connectToDB } from "../mongoose";
 import User from "../models/user.model";
 import Thread from "../models/thread.model";
 import Community from "../models/community.model";
+import mongoose  from "mongoose";
+
+
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   connectToDB();
@@ -238,3 +241,82 @@ export async function addCommentToThread(
     throw new Error("Unable to add comment");
   }
 }
+
+
+export async function likeThread(threadId: string, userId: string) {
+  connectToDB();
+
+  try {
+    // Find the thread by its ID
+    console.log("I am in likeThread");
+    const thread_id = new mongoose.Types.ObjectId(threadId);
+    const user_id = new  mongoose.Types.ObjectId(userId);
+
+    const thread = await Thread.findById(threadId);
+    console.log(thread);
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+
+    // Find the user by their ID
+    const user = await User.findById(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if the user has already liked the thread
+    if (thread?.likes?.includes(user_id)) {
+      throw new Error("Thread already liked by the user");
+    }
+
+    // Add the user's ID to the thread's likes array
+    thread?.likes?.push(user_id);
+
+    // Add the thread's ID to the user's likedThreads array
+    user?.likedThreads?.push(thread_id);
+
+    // Save both the updated thread and user to the database
+    await thread.save();
+    await user.save();
+  } catch (err) {
+    console.error("Error while liking thread:", err);
+    throw new Error("Unable to like thread");
+  }
+}
+
+export async function unlikeThread(threadId: string, userId: string): Promise<void> {
+  connectToDB();
+
+  try {
+    // Find the thread by its ID
+    const thread = await Thread.findById(threadId).exec();
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+
+    // Find the user by their ID
+    const user = await User.findById(userId).exec();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if the user has liked the thread
+    if (!thread.likes.includes(userId)) {
+      throw new Error("Thread not liked by the user");
+    }
+
+    // Remove the user's ID from the thread's likes array
+    thread.likes = thread.likes.filter(id => id.toString() !== userId);
+
+    // Remove the thread's ID from the user's likedThreads array
+    user.likedThreads = user.likedThreads.filter(id => id.toString() !== threadId);
+
+    // Save both the updated thread and user to the database
+    await thread.save();
+    await user.save();
+  } catch (err) {
+    console.error("Error while unliking thread:", err);
+    throw new Error("Unable to unlike thread");
+  }
+}
+
